@@ -72,6 +72,17 @@ export default function TabsLayout() {
           ),
         }}
       />
+	  
+	  <Tabs.Screen
+		name="chat"
+		options={{
+			title: esAdmin ? "Mensajes" : "Chat",
+			href: usuario ? undefined : null,
+			tabBarIcon: ({ color, size }) => (
+			<Ionicons name="chatbubble-outline" size={size} color={color} />
+			),
+		}}
+		/>
 
       <Tabs.Screen
         name="carrito"

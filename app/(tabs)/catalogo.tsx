@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { onAuthStateChanged, User } from "firebase/auth";
-import { get, ref, remove, set, update } from "firebase/database";
+import { get, onValue, ref, remove, set, update } from "firebase/database";
 import React, { useEffect, useState } from "react";
 import {
   Alert,
@@ -87,30 +87,25 @@ export default function CatalogoScreen() {
   }, []);
 
   useEffect(() => {
-    cargarProductos();
-  }, []);
+  const productosRef = ref(database, "prendas");
 
-  const cargarProductos = async () => {
-    try {
-      const productosRef = ref(database, "prendas");
-      const snapshot = await get(productosRef);
+  const unsubscribe = onValue(productosRef, (snapshot) => {
+    if (snapshot.exists()) {
+      const data = snapshot.val();
 
-      if (snapshot.exists()) {
-        const data = snapshot.val();
+      const lista: Producto[] = Object.keys(data).map((id) => ({
+        id: id,
+        ...data[id],
+      }));
 
-        const listaProductos: Producto[] = Object.keys(data).map((id) => ({
-          id: id,
-          ...data[id],
-        }));
-
-        setProductos(listaProductos);
-      } else {
-        setProductos([]);
-      }
-    } catch (error) {
-      showMessage("No se pudieron cargar los productos.");
+      setProductos(lista);
+    } else {
+      setProductos([]);
     }
-  };
+  });
+
+  return () => unsubscribe();
+}, []);
 
   const agregarFavorito = async (idProducto: string) => {
     if (!usuario) {
